@@ -48,17 +48,18 @@ class WebFactory(Factory):
         self.web_server = server
 
     def get_players(self):
-        ##player_data = [names[],levels[],class[],[specializations[]]
-        player_data = [[], [], [], []]
+        ##player_data = [names[],levels[],class[],specialization[], hp_multp[]]
+        player_data = [[], [], [], [], []]
         for connection in self.web_server.server.connections.values():
             player_data[0].append(connection.entity_data.name)
             player_data[1].append(connection.entity_data.character_level)
             player_data[2].append(connection.entity_data.class_type)
             player_data[3].append(connection.entity_data.specialization)
+            player_data[4].append(connection.entity_data.max_hp_multiplier)
         players = {
             'response': 'players', 'names': player_data[0],
             'levels': player_data[1], 'klass': player_data[2],
-            'specialz': player_data[3]
+                'specialz': player_data[3], 'health_mult': player_data[4]
         }
         return json.dumps(players)
 

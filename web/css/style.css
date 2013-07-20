@@ -21,7 +21,7 @@ body{
 .table th,
 .table td {
     padding: 8px;
-    width:25%;
+    width:20%;
     border-top: 1px solid #dddddd;
     vertical-align: top;
     text-align: left;
@@ -39,6 +39,10 @@ body{
 .table tbody tr:hover > th {
     background-color: #f5f5f5;
 }
+.info > span{
+    float: left;
+}
+
 
 .chosen_player, .player_controls{
     background-color: #f5f5f5;
