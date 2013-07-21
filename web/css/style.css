@@ -5,6 +5,10 @@ div{
 body{
     height: 100%;
 }
+.logo{
+    display: block;
+    margin: 0px auto 20px;
+}
 .container-fluid{
     margin: 0;
     padding: 20px 0 0;
