@@ -20,8 +20,8 @@ class PasswordDictChecker:
     credentialInterfaces = (credentials.IUsernamePassword,
                             credentials.IUsernameHashedPassword)
 
-    def __init__(self, passwords):
-        self.passwords = passwords
+    def __init__(self, config):
+        self.passwords = config.passwords
 
     def requestAvatarId(self, credentials):
         username = credentials.username
@@ -51,6 +51,8 @@ class HttpPasswordRealm(object):
 
 
 class WebProtocol(Protocol):
+    noisy = False
+
     def __init__(self, factory):
         #WebFactory
         self.factory = factory
@@ -60,23 +62,11 @@ class WebProtocol(Protocol):
 
     def dataReceived(self, data):
         data = json.loads(data)
-
-        if data['want'] == 'players':
-            self.transport.write(self.factory.get_players())
-        elif data['want'] == 'Ban':
-            if data['reason'] == '':
-                self.factory.web_server.ban_player(data['name'])
-                return
-            self.factory.web_server.ban_player(data['name'],
-                                               data['reason'])
+        response = getattr(self.factory, data['request'], False)(data)
+        if response:
+            self.transport.write(response)
             return
-        elif data['want'] == 'Kick':
-            self.factory.web_server.kick_player(data['name'])
-            return
-        else:
-            self.transport.write(
-                json.dumps({'response': "This shit got serious"}))
-            return
+        self.transport.write({'response': 'Unknown request'})
 
     def connectionLost(self, reason="No reason"):
         self.factory.connections.remove(self)
@@ -89,21 +79,28 @@ class WebFactory(Factory):
         self.connections = []
         self.web_server = server
 
-    def get_players(self):
-        ##player_data = [names[],levels[],class[],specialization[], hp_multp[]]
-        player_data = [[], [], [], [], []]
+    def get_players(self, *args):
+        ##player_data = [name,level,class,specialization]
+        player_data = {'name': '', 'level': '', 'klass': '', 'specialz': ''}
+        players = {'response': 'get_players'}
         for connection in self.web_server.server.connections.values():
-            player_data[0].append(connection.entity_data.name)
-            player_data[1].append(connection.entity_data.character_level)
-            player_data[2].append(connection.entity_data.class_type)
-            player_data[3].append(connection.entity_data.specialization)
-            player_data[4].append(connection.entity_data.max_hp_multiplier)
-        players = {
-            'response': 'players', 'names': player_data[0],
-            'levels': player_data[1], 'klass': player_data[2],
-            'specialz': player_data[3], 'health_mult': player_data[4]
-        }
+            player_id = connection.entity_id
+            player_data['name'] = connection.entity_data.name
+            player_data['level'] = connection.entity_data.level
+            player_data['klass'] = connection.entity_data.class_type
+            player_data['specialz'] = connection.entity_data.specialization
+            players[player_id] = player_data
         return json.dumps(players)
+
+    def command_kick(self, data):
+        player_id = data['id']
+        return self.web_server.kick_player("#" + player_id)
+
+    def command_ban(self, data):
+        player_id = data['id']
+        if data['reason'] != "":
+            return self.web_server.ban_player("#" + player_id, data['reason'])
+        return self.web_server.ban_player("#" + player_id)
 
     def buildProtocol(self, addr):
         return WebProtocol(self)
@@ -120,6 +117,8 @@ class WebScriptProtocol(ConnectionScript):
 
 
 class SiteOverride(Site):
+    noisy = False
+
     def log(self, request):
         pass
 
@@ -138,7 +137,7 @@ class WebScriptFactory(ServerScript):
         root.putChild('js', static.File("./web/js"))
         root.putChild('img', static.File("./web/img"))
 
-        checker = PasswordDictChecker(self.config.passwords)
+        checker = PasswordDictChecker(self.config)
         realm = HttpPasswordRealm(root)
         p = portal.Portal(realm, [checker])
 
@@ -162,14 +161,17 @@ class WebScriptFactory(ServerScript):
             return
         pass
 
-    def kick_player(self, name):
-        player = get_player(self.server, name)
+    def kick_player(self, player_id):
+        player = get_player(self.server, player_id)
         player.kick()
+        return "Success"
 
-    def ban_player(self, name, *args):
-        player = get_player(self.server, name)
+
+    def ban_player(self, player_id, *args):
+        player = get_player(self.server, player_id)
         reason = ' '.join(args) or "No reason specified"
         self.server.call_scripts('ban', player.address.host, reason)
+        return "Success"
 
 
 def get_class():
