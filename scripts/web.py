@@ -52,6 +52,8 @@ class HttpPasswordRealm(object):
 
 class WebProtocol(Protocol):
     noisy = False
+    auth = False
+    auth_attempt = 0
 
     def __init__(self, factory):
         #WebFactory
@@ -59,11 +61,13 @@ class WebProtocol(Protocol):
 
     def connectionMade(self):
         self.factory.connections.append(self)
+        self.timeout_call = reactor.callLater(5.0, self.disconnect)
 
     def dataReceived(self, data):
         data = json.loads(data)
-        response = getattr(self.factory, data['request'], False)(data)
-        if response:
+
+        response = getattr(self.factory, data['request'], False)(self, data)
+        if response and self.auth:
             self.transport.write(response)
             return
         self.transport.write({'response': 'Unknown request'})
@@ -71,49 +75,77 @@ class WebProtocol(Protocol):
     def connectionLost(self, reason="No reason"):
         self.factory.connections.remove(self)
 
+    def disconnect(self):
+        self.transport.loseConnection()
+        self.factory.connectionLost("Disconnected")
+
 
 class WebFactory(Factory):
     noisy = False
 
     def __init__(self, server):
         self.connections = []
+        self.bad_entries = []
+        #WebScriptFactory
         self.web_server = server
+        self.auth_key = self.web_server.config.auth_key
 
     def get_players(self, *args):
         ##player_data = [name,level,class,specialization]
         player_data = {'name': '', 'level': '', 'klass': '', 'specialz': ''}
         players = {'response': 'get_players'}
-        for connection in self.web_server.server.connections.values():
-            player_id = connection.entity_id
-            player_data['name'] = connection.entity_data.name
-            player_data['level'] = connection.entity_data.level
-            player_data['klass'] = connection.entity_data.class_type
-            player_data['specialz'] = connection.entity_data.specialization
+        for player in self.web_server.server.players.values():
+            player_id = player.entity_id
+            player_data['name'] = player.entity_data.name
+            player_data['level'] = player.entity_data.level
+            player_data['klass'] = player.entity_data.class_type
+            player_data['specialz'] = player.entity_data.specialization
             players[player_id] = player_data
         return json.dumps(players)
 
-    def command_kick(self, data):
+    def command_kick(self, ws_connect, data):
         player_id = data['id']
-        return self.web_server.kick_player("#" + player_id)
+        return self.web_server.kick_player(player_id)
 
-    def command_ban(self, data):
+    def command_ban(self, ws_connect, data):
         player_id = data['id']
         if data['reason'] != "":
-            return self.web_server.ban_player("#" + player_id, data['reason'])
-        return self.web_server.ban_player("#" + player_id)
+            return self.web_server.ban_player(player_id, data['reason'])
+        return self.web_server.ban_player(player_id)
+
+    def auth(self, ws_connect, data):
+        if self.auth_key == data['key']:
+            ws_connect.timeout_call.cancel()
+            ws_connect.auth = True
+            return json.dumps({"response": "Success"})
+        elif ws_connect.auth_attempt == 5:
+            self.bad_entries.append(ws_connect.host)
+            ws_connect.disconnect()
+        ws_connect.auth_attempt += 1
+
+    def check_connections(self, addr):
+        if addr.host in self.bad_entries:
+            return False
+        return True
 
     def buildProtocol(self, addr):
+        check = self.check_connections(addr)
+        if check is False:
+            return None
         return WebProtocol(self)
 
 
 class WebScriptProtocol(ConnectionScript):
     def on_join(self):
-        self.parent.update_web("players")
+        self.parent.update_players()
         return True
 
     def on_unload(self):
-        self.parent.update_web("players")
+        self.parent.update_players()
         return True
+
+    def on_chat(self, message):
+        self.parent.update_chat(self.connection.entity_id, message)
 
 
 class SiteOverride(Site):
@@ -129,8 +161,11 @@ class WebScriptFactory(ServerScript):
     def on_load(self):
         self.config = self.server.config.web
         with open('./web/js/init.js', 'w') as f:
-            f.write('var server_port = "%s"' % self.config.web_interface_port2)
-
+            port = self.config.web_interface_port2
+            auth = self.config.auth_key
+            f.write('var server_port = "%s";\n var auth_key = "%s"' % (port,
+                                                                       auth))
+        print auth
         root = File('./web')
         root.indexNames = ['index.html']
         root.putChild('css', static.File("./web/css"))
@@ -145,33 +180,38 @@ class WebScriptFactory(ServerScript):
                                                     "Cuwo Interface Login")
         protected_resource = HTTPAuthSessionWrapper(p, [credentialFactory])
 
-        auth = resource.Resource()
-        auth.putChild("", protected_resource)
-        site = SiteOverride(auth)
+        auth_resource = resource.Resource()
+        auth_resource.putChild("", protected_resource)
+        site = SiteOverride(auth_resource)
 
         reactor.listenTCP(self.config.web_interface_port1, site)
         self.web_factory = WebFactory(self)
         reactor.listenTCP(self.config.web_interface_port2,
                           WebSocketFactory(self.web_factory))
 
-    def update_web(self, entity):
-        if entity == "players":
-            for connection in self.web_factory.connections:
-                connection.transport.write(self.web_factory.get_players())
-            return
-        pass
+    #Web handlers
+    def update_players(self, ):
+        for connection in self.web_factory.connections:
+            connection.transport.write(self.web_factory.get_players())
+        return
+
+    def update_chat(self, message, player_id):
+        response = {'response': 'chat', 'player_id': player_id,
+                    'message': message}
+        for connection in self.web_factory.connections:
+            connection.transport.write(json.dumps(response))
+        return
 
     def kick_player(self, player_id):
-        player = get_player(self.server, player_id)
+        player = get_player(self.server, "#" + player_id)
         player.kick()
-        return "Success"
-
+        return json.dumps({"response": "Success"})
 
     def ban_player(self, player_id, *args):
-        player = get_player(self.server, player_id)
+        player = get_player(self.server, "#" + player_id)
         reason = ' '.join(args) or "No reason specified"
         self.server.call_scripts('ban', player.address.host, reason)
-        return "Success"
+        return json.dumps({"response": "Success"})
 
 
 def get_class():

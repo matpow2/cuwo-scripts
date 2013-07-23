@@ -34,7 +34,7 @@ $(document).ready(function () {
             '<td class="specialization">' + Specializ + '</td></tr>');
     }
 
-    function dellete_player(id) {
+    function delete_player(id) {
         delete PlayersArr[id];
         $("tr[data-id=" + id + "]").remove();
         $("tr.player_controls").remove();
@@ -79,7 +79,10 @@ $(document).ready(function () {
         socket.onopen = function () {
             $('span.reconnecting').text('');
             clearInterval(reconnection);
-            socket.send(JSON.stringify({request: 'get_players'}));
+            socket.send(JSON.stringify({request: 'auth', key: auth_key }));
+            setTimeout(function(){
+                socket.send(JSON.stringify({request: 'get_players'}));
+            },1000);
             socket.onmessage = function (event) {
                 var sedata = JSON.parse(event.data);
                 if (sedata['response'] == 'get_players') {
@@ -101,7 +104,7 @@ $(document).ready(function () {
                         for (var i = 0; i < Object.keys(PlayersArr).length; i++) {
                             var j = Object.keys(sedata).indexOf(Object.keys(PlayersArr)[i]);
                             if (j == -1) {
-                                dellete_player(ids[i]);
+                                delete_player(ids[i]);
                             }
                         }
                     }
