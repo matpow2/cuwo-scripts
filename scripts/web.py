@@ -113,6 +113,13 @@ class WebFactory(Factory):
             return self.web_server.ban_player(player_id, data['reason'])
         return self.web_server.ban_player(player_id)
 
+    def send_message(self, ws_connect, data):
+        message = data['message']
+        for player in self.web_server.server.players.values():
+            player.send_chat(message)
+        return json.dumps({"response": "Success"})
+
+    #Connection handlers
     def auth(self, ws_connect, data):
         if self.auth_key == data['key']:
             ws_connect.timeout_call.cancel()
@@ -138,11 +145,9 @@ class WebFactory(Factory):
 class WebScriptProtocol(ConnectionScript):
     def on_join(self):
         self.parent.update_players()
-        return True
 
     def on_unload(self):
         self.parent.update_players()
-        return True
 
     def on_chat(self, message):
         self.parent.update_chat(self.connection.entity_id, message)
@@ -195,7 +200,7 @@ class WebScriptFactory(ServerScript):
             connection.transport.write(self.web_factory.get_players())
         return
 
-    def update_chat(self, message, player_id):
+    def update_chat(self, player_id, message):
         response = {'response': 'chat', 'player_id': player_id,
                     'message': message}
         for connection in self.web_factory.connections:

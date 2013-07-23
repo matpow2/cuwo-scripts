@@ -1,17 +1,24 @@
-div{
+div {
     margin: 0;
     padding: 0;
 }
-body{
+
+body {
     height: 100%;
+    min-width: 500px;
 }
-.logo{
+
+.logo {
     display: block;
     margin: 0px auto 20px;
 }
-.container-fluid{
+
+.container-fluid {
     margin: 0;
     padding: 20px 0 0;
+}
+.hidden_tab{
+    display: none !important;
 }
 .table {
     margin-bottom: 20px;
@@ -25,7 +32,7 @@ body{
 .table th,
 .table td {
     padding: 8px;
-    width:20%;
+    width: 20%;
     border-top: 1px solid #dddddd;
     vertical-align: top;
     text-align: left;
@@ -39,21 +46,24 @@ body{
 .table thead th {
     vertical-align: bottom;
 }
+
 .table tbody tr:hover > td,
 .table tbody tr:hover > th {
     background-color: #f5f5f5;
 }
-.info > span{
+
+.info > span {
     float: left;
 }
 
-
-.chosen_player, .player_controls{
+.chosen_player, .player_controls {
     background-color: #f5f5f5;
 }
-.player_controls td .btn{
+
+.player_controls td .btn {
     margin-right: 1em;
 }
+
 .btn {
     display: inline-block;
     margin-bottom: 5px;
@@ -83,9 +93,10 @@ body{
     line-height: 20px;
     cursor: pointer;
 }
+
 .btn:hover,
 .btn:focus,
-.btn:active{
+.btn:active {
     background: #e6e6e6 0 -15px;
     color: #333333;
     text-decoration: none;
@@ -94,7 +105,8 @@ body{
     -o-transition: background-position 0.1s linear;
     transition: background-position 0.1s linear;
 }
-input[type="text"]{
+
+input[type="text"] {
     padding-left: 3px;
     height: 1.6em;
     border: 1px solid #cccccc;
@@ -102,32 +114,93 @@ input[type="text"]{
     margin-bottom: 5px;
     vertical-align: middle;
 }
-.nav{
+
+.nav {
     margin: 0;
     padding-left: 4px;
     height: 100%;
     background: #08c;
     color: #fff;
     list-style: none;
-}
-.nav li{
-    padding: 5px 1px 5px 10px;
     overflow: hidden;
 }
-.nav > li > a:hover{
+
+.nav li {
+    padding: 5px 1px 5px 10px;
+    border-left: #08c solid 3px;
+}
+
+.nav > li:hover {
     background: #08c;
     border-left: #dd1144 solid 3px;
-    cursor:pointer ;
+    cursor: pointer;
 }
-.nav > li > a:active,.nav >li> a.current_tab{
+
+.nav > li:active, .nav >li.current_tab {
     border-left: #5eb95e solid 3px;
 }
-.nav li > a{
+
+.nav li{
     color: #fff;
     display: block;
     padding-left: 4px;
     width: 100%;
 }
-.ontainer-fluid{
+
+.container-fluid {
     height: 100%;
+}
+
+#Chat {
+    height: 25em;
+    margin-left: 0;
+
+}
+#ChatWrap{
+    height: 23em;
+}
+#chatMessages {
+    border: #ddd solid 1px;
+    height: 23em;
+    float: left;
+    width: 80%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+#chatMessages > p {
+    margin: 0.2em;
+}
+
+#serverPlayers {
+    margin-left: 0;
+    border: #ddd solid 1px;
+    border-left: 0;
+    height: 23em;
+    width: 20%;
+    float: left;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+#serverPlayers > p{
+    margin: 0.2em;
+}
+#chatInput {
+    border-radius: 0;
+    border: #ddd solid 1px;
+    border-top: 0;
+    width: 100%;
+    display: block;
+    height: 2em;
+    padding-left: 0.2em;
+    box-sizing: border-box;
+}
+
+@media (max-width: 979px) and (min-width: 768px) {
+
+}
+
+@media (min-width: 1200px) {
+
 }

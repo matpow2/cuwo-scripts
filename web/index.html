@@ -10,17 +10,17 @@
 <div class="container-fluid">
     <div class="row-fluid">
         <div class="span3">
-            <img class="logo" src="img/Logo.png">
+            <img class="logo" src="img/logo.png">
+
             <div class="">
                 <ul class="nav">
-                    <li><a data-name="Players" class="current_tab">Players</a>
-                    </li>
-                    <!--<li><a data-name="Chat">Chat</a></li>-->
+                    <li data-name="Players" class="current_tab">Players</li>
+                    <li data-name="Chat">Chat</li>
                 </ul>
                 <span class="reconnecting"></span>
             </div>
         </div>
-        <div class="span9">
+        <div class="span9 content_container">
             <div id="Players" class="span12">
                 <div class="row-fluid">
                     <div class="span12">
@@ -41,13 +41,12 @@
                 </div>
             </div>
             <div id="Chat" class="span12 hidden_tab">
-                <div class="span12">
-                    <div class="row">
-                        <div class="span9" id="chatMessages"></div>
-                        <div class="span3" id="serverPlayers"></div>
+                <div class="ChatWrap">
+                    <div class="" id="chatMessages"></div>
+                    <div class="" id="serverPlayers">
                     </div>
-                    <div class="span12"></div>
                 </div>
+                <input type="text" id="chatInput">
             </div>
         </div>
     </div>
