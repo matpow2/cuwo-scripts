@@ -65,12 +65,16 @@ class WebProtocol(Protocol):
 
     def dataReceived(self, data):
         data = json.loads(data)
-
+        if not self.auth:
+            if data['request'] == 'auth':
+                return self.transport.write(self.factory.auth(self, data))
+            else:
+                return self.transport.write(json.dumps({'response': 'Unknown'}))
         response = getattr(self.factory, data['request'], False)(self, data)
         if response and self.auth:
             self.transport.write(response)
             return
-        self.transport.write({'response': 'Unknown request'})
+        self.transport.write(json.dumps({'response': 'Unknown request'}))
 
     def connectionLost(self, reason="No reason"):
         self.factory.connections.remove(self)
