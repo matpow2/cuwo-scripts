@@ -23,7 +23,7 @@ $(document).ready(function () {
         PlayersArr[id]['name'] = data['name'];
         PlayersArr[id]['level'] = data['level'];
         PlayersArr[id]['klass'] = data['klass'];
-        var Specializ = Specicalizations[data['klass']][data['specialz']];
+        var Specializ = Specicalizations[data['klass'] -1 ][data['specialz']];
         PlayersArr[id]['specialz'] = Specializ;
         PlayersArr[id]['health'] = health_calk(data['klass'], Specializ, data['level']);
         $('table.players tbody').append("" +
@@ -116,7 +116,7 @@ $(document).ready(function () {
                     var ids = Object.keys(sedata);
                     for (var i = 0; i < Object.keys(sedata).length; i++) {
                         if (sedata[ids[i]]['name'] != "undefined" &&
-                            sedata[ids[i]] != "get_players") {
+                            ids[i] != "response") {
                             var j = Object.keys(PlayersArr).indexOf(ids[i]);
                             if (j == -1) {
                                 add_player(sedata[ids[i]], ids[i]);

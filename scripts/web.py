@@ -69,6 +69,7 @@ class WebProtocol(Protocol):
             if data['request'] == 'auth':
                 return self.transport.write(self.factory.auth(self, data))
             else:
+                self.auth_attempt += 1
                 return self.transport.write(json.dumps({'response': 'Unknown'}))
         response = getattr(self.factory, data['request'], False)(self, data)
         if response and self.auth:
@@ -119,8 +120,7 @@ class WebFactory(Factory):
 
     def send_message(self, ws_connect, data):
         message = data['message']
-        for player in self.web_server.server.players.values():
-            player.send_chat(message)
+        self.web_server.server.send_chat(message)
         return json.dumps({"response": "Success"})
 
     #Connection handlers
@@ -147,14 +147,14 @@ class WebFactory(Factory):
 
 
 class WebScriptProtocol(ConnectionScript):
-    def on_join(self):
+    def on_join(self, event):
         self.parent.update_players()
 
     def on_unload(self):
         self.parent.update_players()
 
-    def on_chat(self, message):
-        self.parent.update_chat(self.connection.entity_id, message)
+    def on_chat(self, event):
+        self.parent.update_chat(self.connection.entity_id, event.message)
 
 
 class SiteOverride(Site):
@@ -174,7 +174,6 @@ class WebScriptFactory(ServerScript):
             auth = self.config.auth_key
             f.write('var server_port = "%s";\n var auth_key = "%s"' % (port,
                                                                        auth))
-        print auth
         root = File('./web')
         root.indexNames = ['index.html']
         root.putChild('css', static.File("./web/css"))
