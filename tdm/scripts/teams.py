@@ -16,7 +16,6 @@ from cuwo.common import is_bit_set, set_bit
 from cuwo.entity import EntityData, APPEARANCE_BIT
 from cuwo.packet import EntityUpdate, HitPacket
 from cuwo.vector import Vector3
-from twisted.internet import reactor
 
 import random
 import math
@@ -191,7 +190,7 @@ class TeamConnection(ConnectionScript):
         if self.last_hit_by is None:
             return None
 
-        if reactor.seconds() - self.last_hit_time > self.tag_duration:
+        if self.loop.time() - self.last_hit_time > self.tag_duration:
             return None
 
         if self.last_hit_by.team is not None:
@@ -370,8 +369,8 @@ class TeamServer(ServerScript):
         if event.packet.damage > 0:
             event.packet.damage *= self.pvp_damage_multiplier[class_id-1]
             playerscript.last_hit_by = script
-            playerscript.last_hit_time = reactor.seconds()
-            playerscript.assists[script] = reactor.seconds()
+            playerscript.last_hit_time = self.loop.time()
+            playerscript.assists[script] = self.loop.time()
         else:
             event.packet.damage *= self.outgoing_healing_effectiveness
 
