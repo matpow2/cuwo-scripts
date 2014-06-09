@@ -635,8 +635,8 @@ class KotHServer(ServerScript):
         self.event_mission = mission
 
     def random_item(self, itemdict):
-        list = list(itemdict.keys())
-        item_key = list[random.randint(0, len(list) - 1)]
+        items = list(itemdict.keys())
+        item_key = items[random.randint(0, len(items) - 1)]
         item = create_item_data()
         item.type = item_key[0]
         item.sub_type = item_key[1]
