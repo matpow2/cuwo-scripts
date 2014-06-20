@@ -106,11 +106,8 @@ def create_appearance_data():
     appearance.hair_red = 0
     appearance.hair_green = 0
     appearance.hair_blue = 0
-    appearance.movement_flags = 0
-    appearance.entity_flags = 0
-    appearance.scale = 1.0
-    appearance.bounding_radius = 1.0
-    appearance.bounding_height = 1.0
+    appearance.flags = 0
+    appearance.scale.set(1.0, 1.0, 1.0)
     appearance.head_model = -32767
     appearance.hair_model = -32767
     appearance.hand_model = -32767
@@ -528,10 +525,8 @@ class KotHServer(ServerScript):
             entity.hostile_type = 2
             entity.entity_type = 138
 
-            entity.appearance.entity_flags = 1
-            entity.appearance.scale = 3.0
-            entity.appearance.bounding_radius = 3.0
-            entity.appearance.bounding_height = 4.0
+            entity.appearance.flags = 1
+            entity.appearance.scale.set(3.0, 3.0, 4.0)
             entity.appearance.body_model = 2565
             entity.appearance.head_scale = 0.0
             entity.appearance.hand_scale = 0.0
@@ -564,7 +559,7 @@ class KotHServer(ServerScript):
             dummy.hp = 10000000000
             dummy.power_base = 1
             dummy.name = "KOTHDummy!"
-            dummy.appearance.entity_flags = 1
+            dummy.appearance.flags = 1
 
             self.event_dummy = dummy
             self.event_dummy_id = 1001
@@ -590,11 +585,9 @@ class KotHServer(ServerScript):
                 radius_entity.power_base = 0
                 radius_entity.spawn_pos = self.event_entity.pos
 
-                radius_entity.appearance.scale = 1.0
-                radius_entity.appearance.bounding_radius = 1.0
-                radius_entity.appearance.bounding_height = 1.5
-                radius_entity.appearance.body_offset = Vector3(0, 0, 0)
-                radius_entity.appearance.entity_flags = 1
+                radius_entity.appearance.scale.set(1.0, 1.0, 1.5)
+                radius_entity.appearance.body_offset.set(0, 0, 0)
+                radius_entity.appearance.flags = 1
                 radius_entity.appearance.body_model = 2475
                 radius_entity.appearance.head_scale = 0.0
                 radius_entity.appearance.hand_scale = 0.0

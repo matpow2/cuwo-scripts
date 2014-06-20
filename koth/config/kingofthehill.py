@@ -1,5 +1,8 @@
+"""
+King of the Hill script
 
-""" King of the hill script by Sarcen """
+by Sarcen
+"""
 
 # How frequent xp is given out and
 # How frequent is check if players are within the radius
@@ -19,8 +22,8 @@ king_xp_bonus = 5
 # players get points based on wether they are king or not, points are
 # calculated from these durations, points are not reset when they are
 # outside of the hill area
-reward_frequency = 420 # 7 Minutes
-king_reward_frequency = 180 # 3 Minutes as King
+reward_frequency = 420  # 7 Minutes
+king_reward_frequency = 180  # 3 Minutes as King
 
 # Amount of points you get for kills while WITHIN the KotH area
 kill_king_points = 500

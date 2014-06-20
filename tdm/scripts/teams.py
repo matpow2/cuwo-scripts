@@ -1,4 +1,3 @@
-
 """
 Teams script by Sarcen
 
@@ -12,13 +11,15 @@ see teamdeatmatch.py for example.
 """
 
 from cuwo.script import ServerScript, ConnectionScript, command, admin
-from cuwo.common import is_bit_set, set_bit
-from cuwo.entity import EntityData, APPEARANCE_BIT
+from cuwo import entity as entitydata
 from cuwo.packet import EntityUpdate, HitPacket
 from cuwo.vector import Vector3
+from cuwo import constants
 
 import random
 import math
+
+TEAM_ENTITY_FLAGS = entitydata.HOSTILE_FLAG | entitydata.POWER_BASE_FLAG
 
 entity_packet = EntityUpdate()
 
@@ -75,7 +76,8 @@ class TeamConnection(ConnectionScript):
 
     def on_entity_update(self, event):
         entity_data = self.connection.entity_data
-        entity_data.appearance.entity_flags = 32
+        # XXX what is this flag?
+        entity_data.appearance.flags |= 1 << 13
         entity_data.hostile_type = self.parent.default_hostile_type
         entity_data.power_base = 4
 
@@ -83,18 +85,16 @@ class TeamConnection(ConnectionScript):
         mask_zero = entity_data.mask == 0
 
         if self.first_update:
-            event.mask = set_bit(event.mask, 7, True)
-            event.mask = set_bit(event.mask, 37, True)
+            event.mask |= TEAM_ENTITY_FLAGS
             entity_data.mask |= event.mask
             self.updated_hostile_type = True
             self.requires_team_update = True
         else:
             # Suppress hostile_type and power_base
-            event.mask = set_bit(event.mask, 7, False)
-            event.mask = set_bit(event.mask, 37, False)
+            event.mask &= ~TEAM_ENTITY_FLAGS
             entity_data.mask |= event.mask
 
-        if is_bit_set(event.mask, 27):
+        if event.mask & entitydata.HP_FLAG:
             if self.health_undefined:
                 self.health_undefined = False
                 self.health = entity_data.hp
@@ -122,7 +122,7 @@ class TeamConnection(ConnectionScript):
         if (not mask_zero and self.auto_balanced
                 and not self.appearance_updated):
             self.appearance_updated = True
-            event.mask = set_bit(event.mask, APPEARANCE_BIT, True)
+            event.mask |= entitydata.APPEARANCE_FLAG
             entity_data.mask |= event.mask
 
         if self.requires_team_update and not self.updated_hostile_type:
@@ -161,10 +161,8 @@ class TeamConnection(ConnectionScript):
             self.old_team = None
 
     def update_team_members(self, team, power_base, hostile_type):
-        entity = EntityData()
-        entity.mask = 0
-        entity.mask = set_bit(entity.mask, 7, True)
-        entity.mask = set_bit(entity.mask, 37, True)
+        entity = entitydata.EntityData()
+        entity.mask = TEAM_ENTITY_FLAGS
 
         entity.power_base = power_base
         entity.hostile_type = hostile_type
@@ -331,7 +329,7 @@ class Team(object):
 
 
 class TeamServer(ServerScript):
-    default_hostile_type = 1
+    default_hostile_type = constants.HOSTILE_TYPE
     locked_teams = False
     auto_balance = False
     suppress_damage = False
