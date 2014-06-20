@@ -525,7 +525,7 @@ class KotHServer(ServerScript):
             entity.hostile_type = 2
             entity.entity_type = 138
 
-            entity.appearance.flags = 1
+            entity.appearance.flags = 1 << 8
             entity.appearance.scale.set(3.0, 3.0, 4.0)
             entity.appearance.body_model = 2565
             entity.appearance.head_scale = 0.0
@@ -559,7 +559,7 @@ class KotHServer(ServerScript):
             dummy.hp = 10000000000
             dummy.power_base = 1
             dummy.name = "KOTHDummy!"
-            dummy.appearance.flags = 1
+            dummy.appearance.flags = 1 << 8
 
             self.event_dummy = dummy
             self.event_dummy_id = 1001
@@ -587,7 +587,7 @@ class KotHServer(ServerScript):
 
                 radius_entity.appearance.scale.set(1.0, 1.0, 1.5)
                 radius_entity.appearance.body_offset.set(0, 0, 0)
-                radius_entity.appearance.flags = 1
+                radius_entity.appearance.flags = 1 << 8
                 radius_entity.appearance.body_model = 2475
                 radius_entity.appearance.head_scale = 0.0
                 radius_entity.appearance.hand_scale = 0.0
