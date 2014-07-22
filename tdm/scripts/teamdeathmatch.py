@@ -56,12 +56,12 @@ class TDMConnection(TeamConnection):
             pass
 
     def give_kill_xp(self, player, is_assist=False):
-        if self.connection.entity_data.level >= self.max_level:
+        if self.connection.entity.level >= self.max_level:
             return
         xp_action = KillAction()
         xp_action.entity_id = self.connection.entity_id
         xp_action.target_id = player.connection.entity_id
-        level = player.connection.entity_data.level
+        level = player.connection.entity.level
         xp_action.xp_gained = max(get_max_xp(level) * 0.03, 5)
         if is_assist:
             xp_action.xp_gained *= 0.5
@@ -90,7 +90,7 @@ class TDMConnection(TeamConnection):
         killed_spree = int(player.spree / self.spree_kill_count)
         player.spree = 0
         if killed_spree > 0:
-            entity_type = player.connection.entity_data.entity_type
+            entity_type = player.connection.entity.entity_type
             his_her = 'his' if entity_type in self.male_entities else 'her'
             message += ', ending %s killing spree.' % his_her
 
@@ -171,7 +171,7 @@ class TDMServer(TeamServer):
     def give_reward(self, team):
         for m in team.members:
             self.silent_give_item(m.connection,
-                                  generate_item(0, m.connection.entity_data))
+                                  generate_item(0, m.connection.entity))
 
     # give items silently to players without broadcasting it to everyone
     def silent_give_item(self, connection, item):

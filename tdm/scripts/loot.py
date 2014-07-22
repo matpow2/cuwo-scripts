@@ -142,19 +142,19 @@ def random_item(itemdict):
     return item
 
 
-def generate_item(level=1, entity_data=None):
+def generate_item(level=1, entity=None):
     item_bias = random.randint(0, 100)
 
     if item_bias < 30:
-        if entity_data is not None:
-            class_id = entity_data.class_type
+        if entity is not None:
+            class_id = entity.class_type
         else:
             class_id = random.randint(1, 4)
 
         item = random_item(REWARD_CLASS_WEAPONS[class_id])
     elif item_bias < 60:
-        if entity_data is not None:
-            class_id = entity_data.class_type
+        if entity is not None:
+            class_id = entity.class_type
         else:
             class_id = random.randint(1, 4)
 
@@ -178,8 +178,8 @@ def generate_item(level=1, entity_data=None):
 
     if item.type == 20:
         item.level = 1
-    elif entity_data is not None:
-        item.level = entity_data.level
+    elif entity is not None:
+        item.level = entity.level
     else:
         item.level = level
 

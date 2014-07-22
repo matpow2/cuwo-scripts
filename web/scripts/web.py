@@ -101,10 +101,10 @@ class WebFactory(Factory):
         players = {'response': 'get_players'}
         for player in self.web_server.server.players.values():
             player_id = player.entity_id
-            player_data['name'] = player.entity_data.name
-            player_data['level'] = player.entity_data.level
-            player_data['klass'] = player.entity_data.class_type
-            player_data['specialz'] = player.entity_data.specialization
+            player_data['name'] = player.entity.name
+            player_data['level'] = player.entity.level
+            player_data['klass'] = player.entity.class_type
+            player_data['specialz'] = player.entity.specialization
             players[player_id] = player_data
         return json.dumps(players)
 

@@ -242,7 +242,7 @@ class KotHConnection(ConnectionScript):
         if self.parent.king is None:
             return
 
-        if event.target == self.parent.king.entity_data:
+        if event.target == self.parent.king.entity:
             message = 'you killed {} for {}(+{}xp) KotH points! (+king bonus)'
             self.connection.send_chat((message
                                        .format(event.target.name,
@@ -395,7 +395,7 @@ class KotHServer(ServerScript):
                         player.position).magnitude_squared()
 
             if (distance < self.proximity_radius and
-                    player.entity_data.hp > 0):
+                    player.entity.hp > 0):
                 if player not in self.players_in_proximity:
                     self.players_in_proximity.append(player)
             elif player in self.players_in_proximity:
@@ -449,7 +449,7 @@ class KotHServer(ServerScript):
 
                 print(message)
                 self.server.send_chat(message)
-                item = self.generate_item(player.entity_data)
+                item = self.generate_item(player.entity)
                 player.give_item(item)
 
         self.drop_gold(self.copper_per_tick)
@@ -497,7 +497,7 @@ class KotHServer(ServerScript):
 
     def give_xp(self, player, amount):
         # don't give XP to max levels
-        if self.max_level == 0 or player.entity_data.level < self.max_level:
+        if self.max_level == 0 or player.entity.level < self.max_level:
             update_packet = self.server.update_packet
             action = KillAction()
             action.entity_id = player.entity_id
@@ -637,7 +637,7 @@ class KotHServer(ServerScript):
         item.material = materials[random.randint(0, len(materials) - 1)]
         return item
 
-    def generate_item(self, entity_data):
+    def generate_item(self, entity):
         item_bias = random.randint(0, 100)
 
         if item_bias < 30:
@@ -664,7 +664,7 @@ class KotHServer(ServerScript):
         if item.type == 20:
             item.level = 1
         else:
-            item.level = entity_data.level
+            item.level = entity.level
 
         return item
 

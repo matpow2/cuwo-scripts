@@ -57,7 +57,7 @@ class TeamConnection(ConnectionScript):
         packet.entity_id = self.connection.entity_id
         packet.target_id = self.connection.entity_id
         packet.hit_dir = Vector3()
-        packet.pos = self.connection.entity_data.pos
+        packet.pos = self.connection.entity.pos
         packet.hit_type = 2
         packet.show_light = 0
         packet.something8 = 0
@@ -75,40 +75,40 @@ class TeamConnection(ConnectionScript):
             del self.parent.playerscripts[self.connection.entity_id]
 
     def on_entity_update(self, event):
-        entity_data = self.connection.entity_data
+        entity = self.connection.entity
         # XXX what is this flag?
-        entity_data.appearance.flags |= 1 << 13
-        entity_data.hostile_type = self.parent.default_hostile_type
-        entity_data.power_base = 4
+        entity.appearance.flags |= 1 << 13
+        entity.hostile_type = self.parent.default_hostile_type
+        entity.power_base = 4
 
         # means it was completely updated before this new update fired.
-        mask_zero = entity_data.mask == 0
+        mask_zero = entity.mask == 0
 
         if self.first_update:
             event.mask |= TEAM_ENTITY_FLAGS
-            entity_data.mask |= event.mask
+            entity.mask |= event.mask
             self.updated_hostile_type = True
             self.requires_team_update = True
         else:
             # Suppress hostile_type and power_base
             event.mask &= ~TEAM_ENTITY_FLAGS
-            entity_data.mask |= event.mask
+            entity.mask |= event.mask
 
         if event.mask & entitydata.HP_FLAG:
             if self.health_undefined:
                 self.health_undefined = False
-                self.health = entity_data.hp
+                self.health = entity.hp
 
             self.healing_reductions()
 
-            if entity_data.hp <= 0 and not self.is_dead:
+            if entity.hp <= 0 and not self.is_dead:
                 self.is_dead = True
                 self.on_death()
 
-            if entity_data.hp > 0 and self.is_dead:
+            if entity.hp > 0 and self.is_dead:
                 self.is_dead = False
-                self.last_health = entity_data.hp
-                self.health = entity_data.hp
+                self.last_health = entity.hp
+                self.health = entity.hp
                 # self.on_revive()
 
         if (not self.first_update
@@ -123,7 +123,7 @@ class TeamConnection(ConnectionScript):
                 and not self.appearance_updated):
             self.appearance_updated = True
             event.mask |= entitydata.APPEARANCE_FLAG
-            entity_data.mask |= event.mask
+            entity.mask |= event.mask
 
         if self.requires_team_update and not self.updated_hostile_type:
             self.send_team_entity_updates()
@@ -132,9 +132,9 @@ class TeamConnection(ConnectionScript):
         self.first_update = False
 
     def healing_reductions(self):
-        entity_data = self.connection.entity_data
+        entity = self.connection.entity
         self.last_health = self.health
-        self.health = entity_data.hp
+        self.health = entity.hp
         health_gain = self.health - self.last_health
         if not self.is_dead and health_gain > 0:
             actual_health_gained = (health_gain *
@@ -361,7 +361,7 @@ class TeamServer(ServerScript):
         if event.packet.target_id not in self.playerscripts:
             return
 
-        class_id = script.connection.entity_data.class_type
+        class_id = script.connection.entity.class_type
         playerscript = self.playerscripts[event.packet.target_id]
 
         if event.packet.damage > 0:
