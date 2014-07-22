@@ -545,7 +545,7 @@ class KotHServer(ServerScript):
 
         self.event_entity_id = 1000
         self.event_entity = entity
-        self.server.entities[self.event_entity_id] = entity
+        self.world.entities[self.event_entity_id] = entity
 
         # Create a dummy entity that is hostile, only way
         # HitPacket will grant xp
@@ -563,7 +563,7 @@ class KotHServer(ServerScript):
 
             self.event_dummy = dummy
             self.event_dummy_id = 1001
-            self.server.entities[self.event_dummy_id] = dummy
+            self.world.entities[self.event_dummy_id] = dummy
 
         # Create entities in a circle around the main pillar
         radius_ents = 10
@@ -602,7 +602,7 @@ class KotHServer(ServerScript):
             radius_entity.mask = 0x0000FFFFFFFFFFFF
             radius_entity.velocity = Vector3(0, 0, -100000)
             self.event_radius_entities[id] = radius_entity
-            self.server.entities[id] = radius_entity
+            self.world.entities[id] = radius_entity
 
         self.create_mission_data()
 
