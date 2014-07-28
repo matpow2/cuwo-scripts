@@ -566,7 +566,7 @@ class KotHServer(ServerScript):
                 radius_entity = self.event_radius_entities[id]
 
             if radius_entity is None:
-                radius_entity = create_entity_data()
+                radius_entity = create_entity_data(self.world)
 
                 radius_entity.mask = constants.FULL_MASK
                 radius_entity.hostile_type = 2
