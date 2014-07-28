@@ -197,7 +197,6 @@ def create_entity_data(world):
     entity.super_weird = 0
     entity.spawn_pos = Vector3(0, 0, 0)
     entity.not_used19 = 0
-    entity.not_used20 = (-1, -1, 0)
     entity.consumable = create_item_data()
     entity.equipment = []
     for _ in range(13):
