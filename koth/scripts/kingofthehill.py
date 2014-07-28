@@ -2,8 +2,7 @@
 """ King of the hill script by Sarcen """
 
 from cuwo.script import ServerScript, ConnectionScript, command, admin
-from cuwo.entity import (ItemData, ItemUpgrade, NAME_BIT,
-                         AppearanceData, EntityData)
+from cuwo.entity import ItemData, ItemUpgrade, NAME_BIT, AppearanceData
 from cuwo.packet import (KillAction, MissionData, EntityUpdate)
 from cuwo.vector import Vector3
 from cuwo import constants
@@ -141,8 +140,8 @@ def create_appearance_data():
     return appearance
 
 
-def create_entity_data():
-    entity = EntityData()
+def create_entity_data(world):
+    entity = world.create_entity()
     entity.mask = constants.constants.FULL_MASK
     entity.pos = Vector3(0, 0, 0)
     entity.body_roll = 0
@@ -218,13 +217,13 @@ class KotHConnection(ConnectionScript):
     def on_join(self, event):
         if self.parent.event_entity is not None:
             entity_packet.set_entity(self.parent.event_entity,
-                                     self.parent.event_entity_id,
+                                     self.parent.event_entity.entity_id,
                                      constants.FULL_MASK)
             self.connection.send_packet(entity_packet)
 
         if self.parent.event_dummy is not None:
             entity_packet.set_entity(self.parent.event_dummy,
-                                     self.parent.event_dummy_id,
+                                     self.parent.event_dummy.entity_id,
                                      constants.FULL_MASK)
             self.connection.send_packet(entity_packet)
 
@@ -491,14 +490,17 @@ class KotHServer(ServerScript):
         self.server.drop_item(item, position)
 
     def give_xp(self, player, amount):
+        if not self.event_dummy:
+            return
         # don't give XP to max levels
-        if self.max_level == 0 or player.entity.level < self.max_level:
-            update_packet = self.server.update_packet
-            action = KillAction()
-            action.entity_id = player.entity_id
-            action.target_id = self.event_dummy_id
-            action.xp_gained = amount
-            update_packet.kill_actions.append(action)
+        if self.max_level != 0 and player.entity.level >= self.max_level:
+            return
+        update_packet = self.server.update_packet
+        action = KillAction()
+        action.entity_id = player.entity_id
+        action.target_id = self.event_dummy.entity_id
+        action.xp_gained = amount
+        update_packet.kill_actions.append(action)
 
     def set_radius(self, topostion):
         if self.event_location is not None:
@@ -515,7 +517,7 @@ class KotHServer(ServerScript):
 
         entity = self.event_entity
         if entity is None:
-            entity = create_entity_data()
+            entity = create_entity_data(self.world)
 
             entity.hostile_type = constants.FRIENDLY_TYPE
             entity.entity_type = 138
@@ -538,15 +540,13 @@ class KotHServer(ServerScript):
         entity.spawn_pos = entity.pos
         entity.hp = 10000000000
 
-        self.event_entity_id = 1000
         self.event_entity = entity
-        self.world.entities[self.event_entity_id] = entity
 
         # Create a dummy entity that is hostile, only way
         # HitPacket will grant xp
         dummy = self.event_dummy
         if dummy is None:
-            dummy = create_entity_data()
+            dummy = create_entity_data(self.world)
             dummy.mask = constants.FULL_MASK
             dummy.hostile_type = 1
             dummy.pos = Vector3(0, 0, 100000000) + entity.pos
@@ -557,8 +557,6 @@ class KotHServer(ServerScript):
             dummy.appearance.flags = 1 << 8
 
             self.event_dummy = dummy
-            self.event_dummy_id = 1001
-            self.world.entities[self.event_dummy_id] = dummy
 
         # Create entities in a circle around the main pillar
         radius_ents = 10
