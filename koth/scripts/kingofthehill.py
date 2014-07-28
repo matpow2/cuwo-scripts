@@ -142,7 +142,7 @@ def create_appearance_data():
 
 def create_entity_data(world):
     entity = world.create_entity()
-    entity.mask = constants.constants.FULL_MASK
+    entity.mask = constants.FULL_MASK
     entity.pos = Vector3(0, 0, 0)
     entity.body_roll = 0
     entity.body_pitch = 0
