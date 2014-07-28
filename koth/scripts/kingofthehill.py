@@ -6,7 +6,7 @@ from cuwo.entity import (ItemData, ItemUpgrade, NAME_BIT,
                          AppearanceData, EntityData)
 from cuwo.packet import (KillAction, MissionData, EntityUpdate)
 from cuwo.vector import Vector3
-from cuwo.constants import CHUNK_SCALE, SECTOR_SCALE, FULL_MASK
+from cuwo import constants
 from cuwo.common import set_bit
 
 entity_packet = EntityUpdate()
@@ -143,7 +143,7 @@ def create_appearance_data():
 
 def create_entity_data():
     entity = EntityData()
-    entity.mask = FULL_MASK
+    entity.mask = constants.constants.FULL_MASK
     entity.pos = Vector3(0, 0, 0)
     entity.body_roll = 0
     entity.body_pitch = 0
@@ -160,8 +160,7 @@ def create_entity_data():
     entity.hit_counter = 0
     entity.last_hit_time = 0
     entity.appearance = create_appearance_data()
-    entity.flags_1 = 64
-    entity.flags_2 = 0
+    entity.flags = 64
     entity.roll_time = 0
     entity.stun_time = -10000
     entity.slowed_time = 0
@@ -194,16 +193,12 @@ def create_entity_data():
     entity.unknown_or_not_used1 = 1
     entity.unknown_or_not_used2 = 0
     entity.power_base = 0
-    entity.unknown_or_not_used4 = 4294967295
-    entity.unknown_or_not_used5 = 4294967295
-    entity.not_used11 = 4294967295
+    entity.unknown_or_not_used4 = -1
     entity.not_used12 = 0
     entity.super_weird = 0
     entity.spawn_pos = Vector3(0, 0, 0)
     entity.not_used19 = 0
-    entity.not_used20 = 4294967295
-    entity.not_used21 = 4294967295
-    entity.not_used22 = 0
+    entity.not_used20 = (-1, -1, 0)
     entity.consumable = create_item_data()
     entity.equipment = []
     for _ in range(13):
@@ -224,13 +219,13 @@ class KotHConnection(ConnectionScript):
         if self.parent.event_entity is not None:
             entity_packet.set_entity(self.parent.event_entity,
                                      self.parent.event_entity_id,
-                                     FULL_MASK)
+                                     constants.FULL_MASK)
             self.connection.send_packet(entity_packet)
 
         if self.parent.event_dummy is not None:
             entity_packet.set_entity(self.parent.event_dummy,
                                      self.parent.event_dummy_id,
-                                     FULL_MASK)
+                                     constants.FULL_MASK)
             self.connection.send_packet(entity_packet)
 
         for id, entity in self.parent.event_radius_entities.items():
@@ -522,7 +517,7 @@ class KotHServer(ServerScript):
         if entity is None:
             entity = create_entity_data()
 
-            entity.hostile_type = 2
+            entity.hostile_type = constants.FRIENDLY_TYPE
             entity.entity_type = 138
 
             entity.appearance.flags = 1 << 8
@@ -552,7 +547,7 @@ class KotHServer(ServerScript):
         dummy = self.event_dummy
         if dummy is None:
             dummy = create_entity_data()
-            dummy.mask = FULL_MASK
+            dummy.mask = constants.FULL_MASK
             dummy.hostile_type = 1
             dummy.pos = Vector3(0, 0, 100000000) + entity.pos
             dummy.spawn_pos = entity.pos
@@ -576,7 +571,7 @@ class KotHServer(ServerScript):
             if radius_entity is None:
                 radius_entity = create_entity_data()
 
-                radius_entity.mask = FULL_MASK
+                radius_entity.mask = constants.FULL_MASK
                 radius_entity.hostile_type = 2
                 radius_entity.entity_type = 136
 
@@ -610,8 +605,8 @@ class KotHServer(ServerScript):
 
     def create_mission_data(self):
         mission = MissionData()
-        mission.section_x = int(self.event_entity.pos.x / SECTOR_SCALE)
-        mission.section_y = int(self.event_entity.pos.y / SECTOR_SCALE)
+        mission.section_x = self.event_entity.pos.x // constants.SECTOR_SCALE
+        mission.section_y = self.event_entity.pos.y // constants.SECTOR_SCALE
         mission.something1 = 1
         mission.something2 = 1
         mission.something3 = 1
@@ -623,8 +618,8 @@ class KotHServer(ServerScript):
         mission.state = 1
         mission.something10 = 100
         mission.something11 = 100
-        mission.chunk_x = int(self.event_entity.pos.x / CHUNK_SCALE)
-        mission.chunk_y = int(self.event_entity.pos.y / CHUNK_SCALE)
+        mission.chunk_x = self.event_entity.pos.x // constants.CHUNK_SCALE
+        mission.chunk_y = self.event_entity.pos.y // constants.CHUNK_SCALE
         self.event_mission = mission
 
     def random_item(self, itemdict):
