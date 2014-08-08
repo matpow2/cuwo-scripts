@@ -56,6 +56,8 @@ class TDMConnection(TeamConnection):
             pass
 
     def give_kill_xp(self, player, is_assist=False):
+        if not self.connection:
+            return
         if self.connection.entity.level >= self.max_level:
             return
         xp_action = KillAction()

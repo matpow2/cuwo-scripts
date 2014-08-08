@@ -185,7 +185,7 @@ class TeamConnection(ConnectionScript):
         if self.team is not None:
             self.team.on_death(self, self.last_hit_by)
 
-        if self.last_hit_by is None:
+        if self.last_hit_by is None or not self.last_hit_by.connection:
             return None
 
         if self.loop.time() - self.last_hit_time > self.tag_duration:
