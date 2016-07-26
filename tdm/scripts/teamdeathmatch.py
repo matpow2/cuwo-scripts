@@ -240,9 +240,8 @@ class TDMServer(TeamServer):
 def get_class():
     return TDMServer
 
-
-@admin
 @command
+@admin
 def tdm_set_max_score(script, score):
     """Set the kill count per round."""
     try:
