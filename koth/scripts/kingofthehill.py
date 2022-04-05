@@ -609,7 +609,7 @@ class KotHServer(ServerScript):
         mission.something3 = 1
         mission.mission_id = 1
         mission.something5 = 1
-        mission.monster_id = 1000  # How is this monster id when its an int32?
+        mission.monster_id = 0
         mission.quest_level = 500
         mission.something8 = 1
         mission.state = 1
